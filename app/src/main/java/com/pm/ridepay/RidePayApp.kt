@@ -5,6 +5,7 @@ import com.pm.ridepay.data.local.TokenStore
 import com.pm.ridepay.data.remote.ApiClient
 import com.pm.ridepay.data.remote.RidePayApi
 import com.pm.ridepay.data.repository.AuthRepository
+import com.pm.ridepay.data.repository.DriverRepository
 
 class RidePayApp: Application() {
 
@@ -15,10 +16,14 @@ class RidePayApp: Application() {
     lateinit var authRepository: AuthRepository
         private set
 
+    lateinit var driverRepository: DriverRepository
+        private set
+
     override fun onCreate() {
         super.onCreate()
         tokenStore= TokenStore(this)
         api= ApiClient.create(tokenStore)
         authRepository= AuthRepository(api, tokenStore)
+        driverRepository = DriverRepository(api)
     }
 }
