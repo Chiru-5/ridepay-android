@@ -26,7 +26,7 @@ data class FirebaseLoginRequest(val firebaseIdToken: String)
 data class OnboardRequest(
     val name: String,
     val bankAccountNumber: String,
-    val isfcCode:String,
+    val ifscCode:String,
     val vehicleNumber: String?
 )
 
