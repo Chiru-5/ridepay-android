@@ -27,6 +27,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pm.ridepay.ui.login.LoginScreen
 import com.pm.ridepay.ui.login.LoginViewModel
 import com.pm.ridepay.ui.login.LoginViewModelFactory
+import com.pm.ridepay.ui.onboarding.OnboardingScreen
+import com.pm.ridepay.ui.onboarding.OnboardingViewModel
+import com.pm.ridepay.ui.onboarding.OnboardingViewModelFactory
 import com.pm.ridepay.ui.session.SessionState
 import com.pm.ridepay.ui.session.SessionViewModel
 import com.pm.ridepay.ui.session.SessionViewModelFactory
@@ -67,11 +70,18 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        is SessionState.NeedsOnboarding -> PlaceholderScreen(
-                            title = "Onboarding (coming next)",
-                            onLogout = sessionViewModel::logout,
-                            modifier = contentModifier
-                        )
+                        is SessionState.NeedsOnboarding->{
+                            val onboardingViewModel: OnboardingViewModel=viewModel(
+                                key = "onboarding-${state.driver.driverId}",
+                                factory = OnboardingViewModelFactory(app.driverRepository)
+                            )
+                            OnboardingScreen(
+                                viewModel = onboardingViewModel,
+                                onFinished = {driver -> sessionViewModel.onOnboarded(driver)},
+                                onLogout = sessionViewModel::logout,
+                                modifier = contentModifier
+                            )
+                        }
 
                         is SessionState.Ready -> PlaceholderScreen(
                             title = "Welcome, ${state.driver.name ?: "Driver"}",
