@@ -7,8 +7,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.pm.ridepay.BuildConfig
 
-object ApiConfig{
-    const val BASE_URL="https://obedience-pushcart-extending.ngrok-free.dev"
+object ApiConfig {
+    val BASE_URL: String = BuildConfig.BASE_URL
 }
 
 
