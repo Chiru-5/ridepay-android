@@ -18,6 +18,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,21 +34,21 @@ import com.pm.ridepay.data.model.VerificationStatus
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
-    onFinished: (DriverStatusResponse)-> Unit,
-    onLogout: ()-> Unit,
-    modifier: Modifier= Modifier
-){
+    onFinished: (DriverStatusResponse) -> Unit,
+    onLogout: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val completed=state.completedDriver
+    val completed = state.completedDriver
 
+    LaunchedEffect(completed) {
+        if (completed != null) onFinished(completed)
+    }
 
-    when{
-        completed!=null -> VerifiedContent(
-            onContinue={onFinished(completed)},
-            modifier=modifier
-        )
-        state.isSubmitting -> VerificationProgress(modifier)
-        else-> DetailsForm(state, viewModel, onLogout, modifier)
+    if (state.isSubmitting || completed != null) {
+        VerificationProgress(modifier)
+    } else {
+        DetailsForm(state, viewModel, onLogout, modifier)
     }
 }
 
@@ -170,19 +171,3 @@ private fun VerificationProgress(modifier: Modifier){
 }
 
 
-@Composable
-private fun VerifiedContent(onContinue: ()-> Unit, modifier: Modifier){
-    Column(
-        modifier=modifier.fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    )
-    {
-        Text("You're verified!", style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(8.dp))
-        Text("Your payment QR is next.", style = MaterialTheme.typography.bodyLarge)
-        Spacer(Modifier.height(24.dp))
-        Button(onClick = onContinue) { Text("Continue") }
-    }
-}

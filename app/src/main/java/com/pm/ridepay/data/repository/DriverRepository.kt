@@ -1,5 +1,6 @@
 package com.pm.ridepay.data.repository
 
+import android.R.attr.path
 import com.pm.ridepay.data.model.DriverStatusResponse
 import com.pm.ridepay.data.model.OnboardRequest
 import com.pm.ridepay.data.remote.RidePayApi
@@ -13,4 +14,7 @@ class DriverRepository(private val api: RidePayApi) {
     suspend fun onboard(request: OnboardRequest): Result<DriverStatusResponse> = safeApiCall {
         api.onboard(request)
     }
+
+    suspend fun loadQrImage(path: String): Result<ByteArray> =
+        safeApiCall { api.downloadFile(path).use { body -> body.bytes() } }
 }

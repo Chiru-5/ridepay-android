@@ -20,6 +20,8 @@ sealed interface SessionState {
     data class NeedsOnboarding(val driver: DriverStatusResponse) : SessionState
     data class Ready(val driver: DriverStatusResponse) : SessionState
     data class Error(val message: String) : SessionState
+
+    data class ShowQr(val driver: DriverStatusResponse): SessionState
 }
 
 class SessionViewModel(
@@ -54,7 +56,14 @@ class SessionViewModel(
     }
 
     fun onOnboarded(driver: DriverStatusResponse) {
-        _state.value = routeFor(driver)
+        _state.value = SessionState.ShowQr(driver)
+    }
+
+    fun onQrContinue(){
+        val current = _state.value
+        if(current is SessionState.ShowQr){
+            _state.value=SessionState.Ready(current.driver)
+        }
     }
 
     fun logout() {
