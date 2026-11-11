@@ -9,11 +9,14 @@ import com.pm.ridepay.data.model.PaymentDto
 import com.pm.ridepay.data.model.RideHistoryItem
 import com.pm.ridepay.data.model.RideStatusResponse
 import com.pm.ridepay.data.model.StartRideRequest
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Streaming
+import retrofit2.http.Url
 
 interface RidePayApi {
 
@@ -55,4 +58,8 @@ interface RidePayApi {
 
     @GET("payments/unmatched")
     suspend fun getUnmatchedPayments(): List<PaymentDto>
+
+    @GET
+    @Streaming
+    suspend fun downloadFile(@Url url: String): ResponseBody
 }

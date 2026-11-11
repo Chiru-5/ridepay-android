@@ -26,5 +26,5 @@ fun Throwable.toUserMessage(): String =when (this){
     is FirebaseNetworkException -> "No internet connection."
     is FirebaseTooManyRequestsException -> "Too many attempts. Please try again later."
     is FirebaseAuthInvalidCredentialsException -> "Invalid phone number or code."
-    else -> "Something wnt wrong. Please try again."
+    else -> "Something went wrong. Please try again."
 }
