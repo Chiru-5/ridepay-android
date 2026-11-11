@@ -34,6 +34,9 @@ import com.pm.ridepay.ui.session.SessionState
 import com.pm.ridepay.ui.session.SessionViewModel
 import com.pm.ridepay.ui.session.SessionViewModelFactory
 import com.pm.ridepay.ui.theme.RidePayTheme
+import com.pm.ridepay.ui.qr.QrScreen
+import com.pm.ridepay.ui.qr.QrViewModel
+import com.pm.ridepay.ui.qr.QrViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,6 +98,21 @@ class MainActivity : ComponentActivity() {
                             onLogout = sessionViewModel::logout,
                             modifier = contentModifier
                         )
+
+                        is SessionState.ShowQr -> {
+                            val qrViewModel: QrViewModel = viewModel(
+                                key = "qr-${state.driver.driverId}",
+                                factory = QrViewModelFactory(
+                                    app.driverRepository, app.imageSaver, state.driver.qrImageUrl
+                                )
+                            )
+                            QrScreen(
+                                viewModel = qrViewModel,
+                                continueLabel = "Continue",
+                                onContinue = sessionViewModel::onQrContinue,
+                                modifier = contentModifier
+                            )
+                        }
                     }
                 }
             }
