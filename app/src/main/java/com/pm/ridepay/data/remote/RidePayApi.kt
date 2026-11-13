@@ -36,7 +36,7 @@ interface RidePayApi {
 
 
 //    Backend returns 204 (empty body) when there is no active ride
-    @GET("rides/history")
+    @GET("rides/active")
     suspend fun getActiveRide(): Response<RideStatusResponse>
 
     @GET("rides/history")
