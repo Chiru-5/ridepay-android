@@ -37,7 +37,7 @@ import com.pm.ridepay.ui.theme.RidePayTheme
 import com.pm.ridepay.ui.qr.QrScreen
 import com.pm.ridepay.ui.qr.QrViewModel
 import com.pm.ridepay.ui.qr.QrViewModelFactory
-
+import com.pm.ridepay.ui.navigation.AppNavHost
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,8 +86,8 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        is SessionState.Ready -> PlaceholderScreen(
-                            title = "Welcome, ${state.driver.name ?: "Driver"}",
+                        is SessionState.Ready -> AppNavHost(
+                            app = app,
                             onLogout = sessionViewModel::logout,
                             modifier = contentModifier
                         )
@@ -124,25 +124,6 @@ class MainActivity : ComponentActivity() {
 private fun LoadingScreen(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator()
-    }
-}
-
-@Composable
-private fun PlaceholderScreen(
-    title: String,
-    onLogout: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(title, style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(16.dp))
-        Button(onClick = onLogout) { Text("Log out") }
     }
 }
 
