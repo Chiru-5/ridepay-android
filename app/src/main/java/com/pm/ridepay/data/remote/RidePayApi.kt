@@ -31,7 +31,7 @@ interface RidePayApi {
     @GET("drivers/status")
     suspend fun getDriverStatus(): DriverStatusResponse
 
-    @POST("ride/start")
+    @POST("rides/start")
     suspend fun startRide(@Body request: StartRideRequest): RideStatusResponse
 
 
