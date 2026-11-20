@@ -25,3 +25,9 @@ fun parseServerTime(value: String): LocalDateTime? =
 fun formatTime(value: String): String = parseServerTime(value)?.format(TIME_FORMAT) ?: ""
 
 fun isToday(value: String): Boolean = parseServerTime(value)?.toLocalDate() == LocalDate.now()
+
+
+
+
+private val TIME_SECONDS_FORMAT = DateTimeFormatter.ofPattern("h:mm:ss a", Locale.getDefault())
+fun formatTimeWithSeconds(value: String): String=parseServerTime(value)?.format(TIME_SECONDS_FORMAT)?:""
