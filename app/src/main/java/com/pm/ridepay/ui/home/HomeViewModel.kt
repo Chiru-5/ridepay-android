@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.pm.ridepay.data.model.RideHistoryItem
+import com.pm.ridepay.data.model.RideStatus
+import com.pm.ridepay.data.model.RideStatusResponse
 import com.pm.ridepay.data.repository.RideRepository
 import com.pm.ridepay.util.isToday
 import com.pm.ridepay.util.toUserMessage
@@ -19,6 +21,7 @@ data class HomeUiState(
     val isLoading: Boolean =true,
     val todaysRides: List<RideHistoryItem> = emptyList(),
     val totalCollected: BigDecimal = BigDecimal.ZERO,
+    val activeRide: RideStatusResponse? =null,
     val errorMessage: String? =null
 )
 
@@ -32,20 +35,27 @@ class HomeViewModel(
     fun load(){
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch{
-            rideRepository.getHistory()
-                .onSuccess { rides ->
-                    val todays=rides.filter { ride -> isToday(ride.startedAt) }
-                    _uiState.value = HomeUiState(
-                        isLoading = false,
-                        todaysRides = todays,
-                        totalCollected = todays.fold(BigDecimal.ZERO) { sum, ride ->
-                            sum + ride.collectedAmount
-                        }
-                    )
+            val history = rideRepository.getHistory()
+            val active = rideRepository.getActiveRide()
+
+            val failure = history.exceptionOrNull() ?: active.exceptionOrNull()
+            if(failure!=null){
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = failure.toUserMessage())
                 }
-                .onFailure { error ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = error.toUserMessage()) }
-                }
+                return@launch
+            }
+            val todays = history.getOrDefault(emptyList())
+                .filter { ride -> isToday(ride.startedAt) }
+
+            _uiState.value = HomeUiState(
+                isLoading = false,
+                todaysRides = todays.filter { ride -> ride.status!= RideStatus.ACTIVE },
+                totalCollected = todays.fold(BigDecimal.ZERO){
+                    sum, ride -> sum+ride.collectedAmount
+                },
+                activeRide = active.getOrNull()
+            )
         }
     }
 }
