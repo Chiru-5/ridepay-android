@@ -29,17 +29,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pm.ridepay.data.model.RideHistoryItem
 import com.pm.ridepay.data.model.RideStatus
 import com.pm.ridepay.util.formatMoney
+import com.pm.ridepay.util.formatTime
 
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
     onStartRide: () -> Unit,
+    onResumeRide: (Long)-> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val error = state.errorMessage
+    val activeRide = state.activeRide
 
     LifecycleEventEffect((Lifecycle.Event.ON_RESUME)) {
         viewModel.load()
@@ -69,13 +72,29 @@ fun HomeScreen(
         )
         Spacer(Modifier.height(16.dp))
 
-        Box(modifier = Modifier
-            .weight(1f)
-            .fillMaxWidth()) {
+        activeRide?.let { ride ->
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Ride in progress", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "${formatMoney(ride.collectedAmount)} of ${formatMoney(ride.targetAmount)} collected",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Button(onClick = { onResumeRide(ride.rideId) }) { Text("Resume") }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+        }
+
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
             when {
-                state.isLoading && state.todaysRides.isEmpty() -> CircularProgressIndicator(
-                    Modifier.align(Alignment.Center)
-                )
+                state.isLoading && state.todaysRides.isEmpty() && activeRide == null ->
+                    CircularProgressIndicator(Modifier.align(Alignment.Center))
 
                 error != null && state.todaysRides.isEmpty() ->
                     Column(
@@ -84,11 +103,14 @@ fun HomeScreen(
                     ) {
                         Text(error, color = MaterialTheme.colorScheme.error)
                         Spacer(Modifier.height(8.dp))
-                        OutlinedButton(onClick = viewModel::load) { Text("try again") }
+                        OutlinedButton(onClick = viewModel::load) { Text("Try again") }
                     }
 
                 state.todaysRides.isEmpty() ->
-                    Text("No rides yet today.", Modifier.align(Alignment.Center))
+                    Text(
+                        "No finished rides yet today.",
+                        modifier = Modifier.align(Alignment.Center)
+                    )
 
                 else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(state.todaysRides, key = { it.rideId }) { ride ->
@@ -99,12 +121,15 @@ fun HomeScreen(
         }
 
         Spacer(Modifier.height(16.dp))
-        Button(onClick = onStartRide, modifier = Modifier.fillMaxWidth()) {
+        Button(
+            onClick = onStartRide,
+            enabled = activeRide == null,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text("Start Ride")
         }
     }
 }
-
 
 @Composable
 private fun RideCard(ride: RideHistoryItem) {
@@ -116,13 +141,18 @@ private fun RideCard(ride: RideHistoryItem) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column() {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     "${formatMoney(ride.collectedAmount)} of ${formatMoney(ride.targetAmount)}",
                     style = MaterialTheme.typography.titleMedium
                 )
+                Text(ride.status.label(), style = MaterialTheme.typography.bodyMedium)
             }
-            Text(ride.status.label(), style = MaterialTheme.typography.bodyMedium)
+            Text(
+                formatTime(ride.startedAt),
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1
+            )
         }
     }
 }
