@@ -192,7 +192,7 @@ private fun RideProgress(ride: RideStatusResponse) {
 }
 
 @Composable
-private fun PaymentRow(payment: PaymentDto) {
+internal fun PaymentRow(payment: PaymentDto) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
