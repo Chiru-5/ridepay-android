@@ -1,6 +1,7 @@
 package com.pm.ridepay.data.repository
 
 
+import com.pm.ridepay.data.model.AdjustRideRequest
 import com.pm.ridepay.data.model.RideHistoryItem
 import com.pm.ridepay.data.model.RideStatusResponse
 import com.pm.ridepay.data.model.StartRideRequest
@@ -33,4 +34,8 @@ class RideRepository(private val api: RidePayApi) {
             else -> throw HttpException(response)
         }
     }
+
+
+    suspend fun assignPayment(rideId: Long, paymentId: Long): Result<RideStatusResponse> =
+        safeApiCall { api.adjustRide(rideId, AdjustRideRequest(assignPaymentId = paymentId)) }
 }
