@@ -1,5 +1,6 @@
 package com.pm.ridepay.ui.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +31,7 @@ import com.pm.ridepay.data.model.RideHistoryItem
 import com.pm.ridepay.data.model.RideStatus
 import com.pm.ridepay.util.formatMoney
 import com.pm.ridepay.util.formatTime
-
+import com.pm.ridepay.util.label
 
 @Composable
 fun HomeScreen(
@@ -38,6 +39,7 @@ fun HomeScreen(
     onStartRide: () -> Unit,
     onResumeRide: (Long)-> Unit,
     onReviewPayments: () -> Unit,
+    onOpenRide: (Long) -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -134,7 +136,7 @@ fun HomeScreen(
 
                 else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(state.todaysRides, key = { it.rideId }) { ride ->
-                        RideCard(ride)
+                        RideCard(ride, onClick ={onOpenRide(ride.rideId)})
                     }
                 }
             }
@@ -177,8 +179,30 @@ private fun RideCard(ride: RideHistoryItem) {
     }
 }
 
-private fun RideStatus.label(): String = when (this) {
-    RideStatus.ACTIVE -> "In progress"
-    RideStatus.COMPLETED -> "Completed"
-    RideStatus.CANCELLED -> "Cancelled"
+@Composable
+private fun RideCard(ride: RideHistoryItem, onClick: () -> Unit){
+    Card(modifier = Modifier
+        .fillMaxWidth()
+        .clickable(onClick=onClick)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "${formatMoney(ride.collectedAmount)} of ${formatMoney(ride.targetAmount)}",
+                    style= MaterialTheme.typography.titleMedium
+                )
+                Text(ride.status.label(), style = MaterialTheme.typography.bodyMedium)
+            }
+            Text(
+                formatTime(ride.startedAt),
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1
+            )
+        }
+    }
 }
