@@ -7,6 +7,7 @@ import com.pm.ridepay.data.remote.ApiClient
 import com.pm.ridepay.data.remote.RidePayApi
 import com.pm.ridepay.data.repository.AuthRepository
 import com.pm.ridepay.data.repository.DriverRepository
+import com.pm.ridepay.data.repository.PaymentRepository
 import com.pm.ridepay.data.repository.RideRepository
 import okhttp3.ResponseBody
 import retrofit2.http.GET
@@ -30,6 +31,9 @@ class RidePayApp: Application() {
     lateinit var rideRepository: RideRepository
         private set
 
+    lateinit var paymentRepository: PaymentRepository
+        private set
+
     override fun onCreate() {
         super.onCreate()
         tokenStore= TokenStore(this)
@@ -38,5 +42,6 @@ class RidePayApp: Application() {
         driverRepository = DriverRepository(api)
         imageSaver= ImageSaver(this)
         rideRepository = RideRepository(api)
+        paymentRepository= PaymentRepository(api)
     }
 }

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.pm.ridepay.data.model.RideHistoryItem
 import com.pm.ridepay.data.model.RideStatus
 import com.pm.ridepay.data.model.RideStatusResponse
+import com.pm.ridepay.data.repository.PaymentRepository
 import com.pm.ridepay.data.repository.RideRepository
 import com.pm.ridepay.util.isToday
 import com.pm.ridepay.util.toUserMessage
@@ -16,54 +17,61 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
-
 data class HomeUiState(
-    val isLoading: Boolean =true,
+    val isLoading: Boolean = true,
     val todaysRides: List<RideHistoryItem> = emptyList(),
     val totalCollected: BigDecimal = BigDecimal.ZERO,
-    val activeRide: RideStatusResponse? =null,
-    val errorMessage: String? =null
+    val activeRide: RideStatusResponse? = null,
+    val unassignedCount: Int = 0,
+    val errorMessage: String? = null
 )
 
 class HomeViewModel(
-    private val rideRepository: RideRepository
-): ViewModel() {
+    private val rideRepository: RideRepository,
+    private val paymentRepository: PaymentRepository
+) : ViewModel() {
+
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-
-    fun load(){
+    fun load() {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-        viewModelScope.launch{
+        viewModelScope.launch {
             val history = rideRepository.getHistory()
             val active = rideRepository.getActiveRide()
+            val unmatched = paymentRepository.getUnmatched()
 
-            val failure = history.exceptionOrNull() ?: active.exceptionOrNull()
-            if(failure!=null){
+            val failure = history.exceptionOrNull()
+                ?: active.exceptionOrNull()
+                ?: unmatched.exceptionOrNull()
+            if (failure != null) {
                 _uiState.update {
                     it.copy(isLoading = false, errorMessage = failure.toUserMessage())
                 }
                 return@launch
             }
+
             val todays = history.getOrDefault(emptyList())
                 .filter { ride -> isToday(ride.startedAt) }
 
             _uiState.value = HomeUiState(
                 isLoading = false,
-                todaysRides = todays.filter { ride -> ride.status!= RideStatus.ACTIVE },
-                totalCollected = todays.fold(BigDecimal.ZERO){
-                    sum, ride -> sum+ride.collectedAmount
+                todaysRides = todays.filter { ride -> ride.status != RideStatus.ACTIVE },
+                totalCollected = todays.fold(BigDecimal.ZERO) { sum, ride ->
+                    sum + ride.collectedAmount
                 },
-                activeRide = active.getOrNull()
+                activeRide = active.getOrNull(),
+                unassignedCount = unmatched.getOrDefault(emptyList()).size
             )
         }
     }
 }
 
 class HomeViewModelFactory(
-    private val rideRepository: RideRepository
-): ViewModelProvider.Factory{
+    private val rideRepository: RideRepository,
+    private val paymentRepository: PaymentRepository
+) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T =
-        HomeViewModel(rideRepository) as T
+        HomeViewModel(rideRepository, paymentRepository) as T
 }
