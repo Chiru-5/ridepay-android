@@ -39,7 +39,8 @@ data class StartRideUiState(
 }
 
 class StartRideViewModel(
-    private val rideRepository: RideRepository
+    private val rideRepository: RideRepository,
+    private val assignPaymentId: Long?
 ): ViewModel() {
 
     private val _uiState= MutableStateFlow(StartRideUiState())
@@ -81,17 +82,26 @@ class StartRideViewModel(
 
         _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
         viewModelScope.launch {
-            rideRepository.startRide(StartRideRequest(fare, passengers))
-                .onSuccess { ride ->
-                    _uiState.update {
-                        it.copy(isSubmitting = false, startedRideId = ride.rideId)
-                    }
+            val result = rideRepository.startRide(StartRideRequest(fare, passengers))
+            val ride = result.getOrNull()
+            if (ride == null) {
+                _uiState.update {
+                    it.copy(
+                        isSubmitting = false,
+                        errorMessage = result.exceptionOrNull()?.toUserMessage()
+                            ?: "Could not start the ride."
+                    )
                 }
-                .onFailure { error ->
-                    _uiState.update {
-                        it.copy(isSubmitting = false, errorMessage = error.toUserMessage())
-                    }
-                }
+                return@launch
+            }
+
+            // If we came from the unassigned list, attach that payment to the new ride.
+            // If this fails, the payment simply stays in the list.
+            if (assignPaymentId != null) {
+                rideRepository.assignPayment(ride.rideId, assignPaymentId)
+            }
+
+            _uiState.update { it.copy(isSubmitting = false, startedRideId = ride.rideId) }
         }
     }
 }
@@ -106,9 +116,10 @@ private fun cleanFare(input: String): String{
 }
 
 class StartRideViewModelFactory(
-    private val rideRepository: RideRepository
+    private val rideRepository: RideRepository,
+    private val assignPaymentId: Long?
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T =
-        StartRideViewModel(rideRepository) as T
+        StartRideViewModel(rideRepository, assignPaymentId) as T
 }
