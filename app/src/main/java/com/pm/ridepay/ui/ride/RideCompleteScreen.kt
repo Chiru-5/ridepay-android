@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 @Composable
 fun RideCompleteScreen(
     viewModel: RideStatusViewModel,
+    onViewDetails: ()-> Unit,
     onDone: () -> Unit,
     modifier: Modifier= Modifier
 ){
@@ -68,6 +69,7 @@ fun RideCompleteScreen(
             else -> CircularProgressIndicator()
         }
         Spacer(Modifier.height(32.dp))
+        Button(onClick = onViewDetails, enabled = ride!=null) {Text("View details") }
         Button(onClick = onDone) {
             Text("Back to Home")
         }
