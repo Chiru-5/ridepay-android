@@ -1,18 +1,7 @@
 package com.pm.ridepay.ui.navigation
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -30,17 +19,24 @@ import com.pm.ridepay.ui.ride.TrackerScreen
 import com.pm.ridepay.ui.startride.StartRideScreen
 import com.pm.ridepay.ui.startride.StartRideViewModel
 import com.pm.ridepay.ui.startride.StartRideViewModelFactory
+import com.pm.ridepay.ui.unassigned.UnassignedPaymentsScreen
+import com.pm.ridepay.ui.unassigned.UnassignedPaymentsViewModel
+import com.pm.ridepay.ui.unassigned.UnassignedPaymentsViewModelFactory
 
-
-object Routes{
-    const val HOME ="home"
-    const val START_RIDE = "start_ride"
+object Routes {
+    const val HOME = "home"
+    const val START_RIDE = "start_ride?assignPaymentId={assignPaymentId}"
+    const val UNASSIGNED = "unassigned"
     const val TRACKER = "tracker/{rideId}"
-    const val COMPLETE ="complete/{rideId}"
-    fun tracker(rideId: Long) = "tracker/${rideId}"
+    const val COMPLETE = "complete/{rideId}"
+
+    fun startRide(assignPaymentId: Long? = null) =
+        if (assignPaymentId == null) "start_ride"
+        else "start_ride?assignPaymentId=$assignPaymentId"
+
+    fun tracker(rideId: Long) = "tracker/$rideId"
     fun complete(rideId: Long) = "complete/$rideId"
 }
-
 
 @Composable
 fun AppNavHost(
@@ -58,19 +54,31 @@ fun AppNavHost(
     ) {
         composable(Routes.HOME) {
             val homeViewModel: HomeViewModel = viewModel(
-                factory = HomeViewModelFactory(app.rideRepository)
+                factory = HomeViewModelFactory(app.rideRepository, app.paymentRepository)
             )
             HomeScreen(
                 viewModel = homeViewModel,
-                onStartRide = { navController.navigate(Routes.START_RIDE) },
+                onStartRide = { navController.navigate(Routes.startRide()) },
                 onResumeRide = { rideId -> navController.navigate(Routes.tracker(rideId)) },
+                onReviewPayments = { navController.navigate(Routes.UNASSIGNED) },
                 onLogout = onLogout
             )
         }
 
-        composable(Routes.START_RIDE) {
+        composable(
+            route = Routes.START_RIDE,
+            arguments = listOf(
+                navArgument("assignPaymentId") {
+                    type = NavType.LongType
+                    defaultValue = -1L
+                }
+            )
+        ) { entry ->
+            val assignPaymentId = entry.arguments
+                ?.getLong("assignPaymentId")
+                ?.takeIf { it > 0 }
             val startRideViewModel: StartRideViewModel = viewModel(
-                factory = StartRideViewModelFactory(app.rideRepository)
+                factory = StartRideViewModelFactory(app.rideRepository, assignPaymentId)
             )
             StartRideScreen(
                 viewModel = startRideViewModel,
@@ -78,6 +86,21 @@ fun AppNavHost(
                     navController.navigate(Routes.tracker(rideId)) {
                         popUpTo(Routes.START_RIDE) { inclusive = true }
                     }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.UNASSIGNED) {
+            val viewModel: UnassignedPaymentsViewModel = viewModel(
+                factory = UnassignedPaymentsViewModelFactory(
+                    app.rideRepository, app.paymentRepository
+                )
+            )
+            UnassignedPaymentsScreen(
+                viewModel = viewModel,
+                onStartRideFor = { paymentId ->
+                    navController.navigate(Routes.startRide(paymentId))
                 },
                 onBack = { navController.popBackStack() }
             )
