@@ -71,9 +71,12 @@ data class RideStatusResponse(
     val targetAmount: BigDecimal,
     val collectedAmount: BigDecimal,
     val estimatedPaid: Int,
-    val passengerCount : Int,
+    val passengerCount: Int,
     val status: RideStatus,
-    val payments: List<PaymentDto>
+    val payments: List<PaymentDto>,
+    val farePerPerson: BigDecimal? = null,
+    val startedAt: String? = null,
+    val completedAt: String? = null
 )
 
 data class RideHistoryItem(
