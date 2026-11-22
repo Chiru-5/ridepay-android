@@ -37,6 +37,7 @@ fun HomeScreen(
     viewModel: HomeViewModel,
     onStartRide: () -> Unit,
     onResumeRide: (Long)-> Unit,
+    onReviewPayments: () -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -82,6 +83,25 @@ fun HomeScreen(
                     )
                     Spacer(Modifier.height(8.dp))
                     Button(onClick = { onResumeRide(ride.rideId) }) { Text("Resume") }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+        }
+
+
+        if (state.unassignedCount > 0) {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        "${state.unassignedCount} unassigned payment(s)",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        "Money arrived that is not part of any ride.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedButton(onClick = onReviewPayments) { Text("Review") }
                 }
             }
             Spacer(Modifier.height(16.dp))
