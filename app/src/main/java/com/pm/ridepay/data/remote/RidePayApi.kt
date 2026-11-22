@@ -62,4 +62,7 @@ interface RidePayApi {
     @GET
     @Streaming
     suspend fun downloadFile(@Url url: String): ResponseBody
+
+    @POST("payments/{paymentId}/ignore")
+    suspend fun ignorePayment(@Path("paymentId") paymentId: Long): PaymentDto
 }
