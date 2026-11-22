@@ -13,6 +13,7 @@ import com.pm.ridepay.ui.home.HomeScreen
 import com.pm.ridepay.ui.home.HomeViewModel
 import com.pm.ridepay.ui.home.HomeViewModelFactory
 import com.pm.ridepay.ui.ride.RideCompleteScreen
+import com.pm.ridepay.ui.ride.RideDetailsScreen
 import com.pm.ridepay.ui.ride.RideStatusViewModel
 import com.pm.ridepay.ui.ride.RideStatusViewModelFactory
 import com.pm.ridepay.ui.ride.TrackerScreen
@@ -30,12 +31,16 @@ object Routes {
     const val TRACKER = "tracker/{rideId}"
     const val COMPLETE = "complete/{rideId}"
 
+    const val DETAILS = "details/{rideId}"
+
     fun startRide(assignPaymentId: Long? = null) =
         if (assignPaymentId == null) "start_ride"
         else "start_ride?assignPaymentId=$assignPaymentId"
 
     fun tracker(rideId: Long) = "tracker/$rideId"
     fun complete(rideId: Long) = "complete/$rideId"
+
+    fun details(rideId: Long) = "details/$rideId"
 }
 
 @Composable
@@ -61,6 +66,7 @@ fun AppNavHost(
                 onStartRide = { navController.navigate(Routes.startRide()) },
                 onResumeRide = { rideId -> navController.navigate(Routes.tracker(rideId)) },
                 onReviewPayments = { navController.navigate(Routes.UNASSIGNED) },
+                onOpenRide = { rideId -> navController.navigate(Routes.details(rideId)) },
                 onLogout = onLogout
             )
         }
@@ -129,7 +135,19 @@ fun AppNavHost(
             )
             RideCompleteScreen(
                 viewModel = viewModel,
+                onViewDetails = { navController.navigate(Routes.details(rideId)) },
                 onDone = { navController.popBackStack(Routes.HOME, inclusive = false) }
+            )
+        }
+
+        composable(Routes.DETAILS, arguments = rideIdArgument) { entry ->
+            val rideId = entry.arguments?.getLong("rideId") ?: 0L
+            val viewModel: RideStatusViewModel = viewModel(
+                factory = RideStatusViewModelFactory(app.rideRepository, rideId)
+            )
+            RideDetailsScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() }
             )
         }
     }
