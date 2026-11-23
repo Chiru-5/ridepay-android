@@ -40,7 +40,7 @@ fun HomeScreen(
     onResumeRide: (Long)-> Unit,
     onReviewPayments: () -> Unit,
     onOpenRide: (Long) -> Unit,
-    onLogout: () -> Unit,
+    onOpenProfile: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -67,7 +67,7 @@ fun HomeScreen(
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.weight(1f)
             )
-            TextButton(onClick = onLogout) { Text("Log out") }
+            TextButton(onClick = onOpenProfile) { Text("Profile") }
         }
         Text(
             "Collected today: ${formatMoney(state.totalCollected)}",

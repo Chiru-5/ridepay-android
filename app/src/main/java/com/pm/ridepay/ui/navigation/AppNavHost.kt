@@ -9,9 +9,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.pm.ridepay.RidePayApp
+import com.pm.ridepay.data.model.DriverStatusResponse
 import com.pm.ridepay.ui.home.HomeScreen
 import com.pm.ridepay.ui.home.HomeViewModel
 import com.pm.ridepay.ui.home.HomeViewModelFactory
+import com.pm.ridepay.ui.profile.ProfileScreen
+import com.pm.ridepay.ui.profile.ProfileViewModel
+import com.pm.ridepay.ui.profile.ProfileViewModelFactory
+import com.pm.ridepay.ui.qr.QrScreen
+import com.pm.ridepay.ui.qr.QrViewModel
+import com.pm.ridepay.ui.qr.QrViewModelFactory
 import com.pm.ridepay.ui.ride.RideCompleteScreen
 import com.pm.ridepay.ui.ride.RideDetailsScreen
 import com.pm.ridepay.ui.ride.RideStatusViewModel
@@ -33,6 +40,10 @@ object Routes {
 
     const val DETAILS = "details/{rideId}"
 
+    const val PROFILE = "profile"
+
+    const val QR = "qr"
+
     fun startRide(assignPaymentId: Long? = null) =
         if (assignPaymentId == null) "start_ride"
         else "start_ride?assignPaymentId=$assignPaymentId"
@@ -46,6 +57,7 @@ object Routes {
 @Composable
 fun AppNavHost(
     app: RidePayApp,
+    driver: DriverStatusResponse,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -67,7 +79,7 @@ fun AppNavHost(
                 onResumeRide = { rideId -> navController.navigate(Routes.tracker(rideId)) },
                 onReviewPayments = { navController.navigate(Routes.UNASSIGNED) },
                 onOpenRide = { rideId -> navController.navigate(Routes.details(rideId)) },
-                onLogout = onLogout
+                onOpenProfile = { navController.navigate(Routes.PROFILE) }
             )
         }
 
@@ -148,6 +160,33 @@ fun AppNavHost(
             RideDetailsScreen(
                 viewModel = viewModel,
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.PROFILE) {
+            val profileViewModel: ProfileViewModel = viewModel(
+                factory = ProfileViewModelFactory(app.driverRepository)
+            )
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onViewQr = { navController.navigate(Routes.QR) },
+                onLogout = onLogout,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.QR) {
+            val qrViewModel: QrViewModel = viewModel(
+                factory = QrViewModelFactory(
+                    app.driverRepository,
+                    app.imageSaver,
+                    driver.qrImageUrl
+                )
+            )
+            QrScreen(
+                viewModel = qrViewModel,
+                continueLabel = "Back",
+                onContinue = { navController.popBackStack() }
             )
         }
     }
