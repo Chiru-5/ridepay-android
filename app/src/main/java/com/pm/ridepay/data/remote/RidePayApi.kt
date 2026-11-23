@@ -2,6 +2,7 @@ package com.pm.ridepay.data.remote
 
 import com.pm.ridepay.data.model.AdjustRideRequest
 import com.pm.ridepay.data.model.AuthResponse
+import com.pm.ridepay.data.model.DriverProfileResponse
 import com.pm.ridepay.data.model.DriverStatusResponse
 import com.pm.ridepay.data.model.FirebaseLoginRequest
 import com.pm.ridepay.data.model.OnboardRequest
@@ -9,6 +10,7 @@ import com.pm.ridepay.data.model.PaymentDto
 import com.pm.ridepay.data.model.RideHistoryItem
 import com.pm.ridepay.data.model.RideStatusResponse
 import com.pm.ridepay.data.model.StartRideRequest
+import com.pm.ridepay.data.repository.safeApiCall
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -65,4 +67,8 @@ interface RidePayApi {
 
     @POST("payments/{paymentId}/ignore")
     suspend fun ignorePayment(@Path("paymentId") paymentId: Long): PaymentDto
+
+
+    @GET("drivers/me")
+    suspend fun getProfile(): DriverProfileResponse
 }

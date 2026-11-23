@@ -88,6 +88,7 @@ class MainActivity : ComponentActivity() {
 
                         is SessionState.Ready -> AppNavHost(
                             app = app,
+                            driver = state.driver,
                             onLogout = sessionViewModel::logout,
                             modifier = contentModifier
                         )

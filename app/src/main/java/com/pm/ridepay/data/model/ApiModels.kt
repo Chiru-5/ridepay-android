@@ -93,3 +93,15 @@ data class ApiError(
     val message: String?,
     val errors: Map<String, String>?
 )
+
+
+data class DriverProfileResponse(
+    val driverId: Long,
+    val name: String,
+    val phoneNumber: String?,
+    val vehicleNumber: String?,
+    val maskedAccountNumber: String?,
+    val ifscCode: String?,
+    val verificationStatus: VerificationStatus,
+    val upiId: String?
+)
