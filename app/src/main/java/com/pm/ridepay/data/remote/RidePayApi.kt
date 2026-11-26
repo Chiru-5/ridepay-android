@@ -2,6 +2,7 @@ package com.pm.ridepay.data.remote
 
 import com.pm.ridepay.data.model.AdjustRideRequest
 import com.pm.ridepay.data.model.AuthResponse
+import com.pm.ridepay.data.model.DeviceTokenRequest
 import com.pm.ridepay.data.model.DriverProfileResponse
 import com.pm.ridepay.data.model.DriverStatusResponse
 import com.pm.ridepay.data.model.FirebaseLoginRequest
@@ -16,6 +17,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Streaming
 import retrofit2.http.Url
@@ -71,4 +73,8 @@ interface RidePayApi {
 
     @GET("drivers/me")
     suspend fun getProfile(): DriverProfileResponse
+
+
+    @PUT("drivers/me/device-token")
+    suspend fun registerDeviceToken(@Body request: DeviceTokenRequest)
 }

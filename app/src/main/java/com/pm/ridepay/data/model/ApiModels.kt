@@ -105,3 +105,8 @@ data class DriverProfileResponse(
     val verificationStatus: VerificationStatus,
     val upiId: String?
 )
+
+
+data class DeviceTokenRequest(
+    val token: String
+)
