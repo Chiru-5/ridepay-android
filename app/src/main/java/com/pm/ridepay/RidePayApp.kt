@@ -9,6 +9,8 @@ import com.pm.ridepay.data.repository.AuthRepository
 import com.pm.ridepay.data.repository.DriverRepository
 import com.pm.ridepay.data.repository.PaymentRepository
 import com.pm.ridepay.data.repository.RideRepository
+import com.pm.ridepay.push.NotificationChannels
+import com.pm.ridepay.push.PushRegistrar
 import okhttp3.ResponseBody
 import retrofit2.http.GET
 import retrofit2.http.Url
@@ -34,12 +36,17 @@ class RidePayApp: Application() {
     lateinit var paymentRepository: PaymentRepository
         private set
 
+    lateinit var pushRegistrar: PushRegistrar
+        private set
+
     override fun onCreate() {
         super.onCreate()
         tokenStore= TokenStore(this)
         api= ApiClient.create(tokenStore)
         authRepository= AuthRepository(api, tokenStore)
         driverRepository = DriverRepository(api)
+        NotificationChannels.create(this)
+        pushRegistrar = PushRegistrar(driverRepository, tokenStore)
         imageSaver= ImageSaver(this)
         rideRepository = RideRepository(api)
         paymentRepository= PaymentRepository(api)

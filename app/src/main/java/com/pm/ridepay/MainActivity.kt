@@ -18,6 +18,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -86,12 +87,15 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        is SessionState.Ready -> AppNavHost(
-                            app = app,
-                            driver = state.driver,
-                            onLogout = sessionViewModel::logout,
-                            modifier = contentModifier
-                        )
+                        is SessionState.Ready -> {
+                            LaunchedEffect(Unit) { app.pushRegistrar.syncToken() }
+                            AppNavHost(
+                                app = app,
+                                driver = state.driver,
+                                onLogout = sessionViewModel::logout,
+                                modifier = contentModifier
+                            )
+                        }
 
                         is SessionState.Error -> ErrorScreen(
                             message = state.message,

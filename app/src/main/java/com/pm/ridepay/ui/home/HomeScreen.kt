@@ -1,5 +1,9 @@
 package com.pm.ridepay.ui.home
 
+import android.Manifest
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,14 +25,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pm.ridepay.data.model.RideHistoryItem
-import com.pm.ridepay.data.model.RideStatus
+import android.provider.Settings
 import com.pm.ridepay.util.formatMoney
 import com.pm.ridepay.util.formatTime
 import com.pm.ridepay.util.label
@@ -75,6 +84,7 @@ fun HomeScreen(
         )
         Spacer(Modifier.height(16.dp))
 
+        NotificationPrompt()
         activeRide?.let { ride ->
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -204,5 +214,49 @@ private fun RideCard(ride: RideHistoryItem, onClick: () -> Unit){
                 maxLines = 1
             )
         }
+    }
+}
+
+
+
+@Composable
+private fun NotificationPrompt() {
+    val context = LocalContext.current
+    var enabled by remember {
+        mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled())
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        enabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
+    }
+
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        enabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
+        if (!granted && !enabled) {
+            // The system will not ask again, so send the driver to Settings
+            context.startActivity(
+                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            )
+        }
+    }
+
+    if (!enabled) {
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Turn on notifications", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    "Know when a ride is complete or a payment arrives, even when the app is closed.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = { launcher.launch(Manifest.permission.POST_NOTIFICATIONS) }) {
+                    Text("Turn on")
+                }
+            }
+        }
+        Spacer(Modifier.height(16.dp))
     }
 }

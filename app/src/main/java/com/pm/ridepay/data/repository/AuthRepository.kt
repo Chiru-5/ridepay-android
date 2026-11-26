@@ -2,6 +2,7 @@ package com.pm.ridepay.data.repository
 
 import androidx.browser.trusted.Token
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.messaging.FirebaseMessaging
 import com.pm.ridepay.data.local.TokenStore
 import com.pm.ridepay.data.model.AuthResponse
 import com.pm.ridepay.data.model.FirebaseLoginRequest
@@ -19,8 +20,9 @@ class AuthRepository(
         }
 
     fun isLoggedIn(): Boolean = tokenStore.getToken()!=null
-    fun logout(){
+    fun logout() {
         tokenStore.clear()
         FirebaseAuth.getInstance().signOut()
+        FirebaseMessaging.getInstance().deleteToken()
     }
 }
