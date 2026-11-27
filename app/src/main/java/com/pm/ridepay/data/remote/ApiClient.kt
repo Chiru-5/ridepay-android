@@ -6,6 +6,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.pm.ridepay.BuildConfig
+import com.pm.ridepay.data.local.SessionEvents
 
 object ApiConfig {
     val BASE_URL: String = BuildConfig.BASE_URL
@@ -13,7 +14,7 @@ object ApiConfig {
 
 
 object ApiClient {
-    fun create(tokenStore: TokenStore): RidePayApi{
+    fun create(tokenStore: TokenStore, sessionEvents: SessionEvents): RidePayApi{
         val logging= HttpLoggingInterceptor().apply {
             level=if (BuildConfig.DEBUG){
                 HttpLoggingInterceptor.Level.BODY
@@ -26,7 +27,7 @@ object ApiClient {
 
 
         val okHttp= OkHttpClient.Builder()
-            .addInterceptor(AuthInterceptor(tokenStore))
+            .addInterceptor(AuthInterceptor(tokenStore, sessionEvents))
             .addInterceptor(logging)
             .build()
 

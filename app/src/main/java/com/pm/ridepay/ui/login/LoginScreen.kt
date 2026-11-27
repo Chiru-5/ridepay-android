@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
+    notice: String? = null,
     onLoggedIn: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -48,6 +49,10 @@ fun LoginScreen(
         Text("RidePay", style= MaterialTheme.typography.headlineLarge)
         Spacer(Modifier.height(4.dp))
         Text("Driver login", style= MaterialTheme.typography.bodyLarge)
+        notice?.let { message ->
+            Spacer(Modifier.height(8.dp))
+            Text(message, color = MaterialTheme.colorScheme.primary)
+        }
         Spacer(Modifier.height(32.dp))
 
         when(state.step){
