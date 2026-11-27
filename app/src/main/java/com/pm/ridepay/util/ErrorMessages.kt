@@ -19,7 +19,8 @@ fun Throwable.toUserMessage(): String =when (this){
         }
         parsed?.message
             ?:parsed?.errors?.values?.firstOrNull()
-            ?:"Server error (${code()}"
+            ?: if (code() == 401) "Your session has expired. Please log in again."
+            else "Server error (${code()})"
     }
 
     is IOException -> "Cannot reach the server. Check your internet connection."

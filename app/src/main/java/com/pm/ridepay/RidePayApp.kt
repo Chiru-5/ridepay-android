@@ -2,6 +2,7 @@ package com.pm.ridepay
 
 import android.app.Application
 import com.pm.ridepay.data.local.ImageSaver
+import com.pm.ridepay.data.local.SessionEvents
 import com.pm.ridepay.data.local.TokenStore
 import com.pm.ridepay.data.remote.ApiClient
 import com.pm.ridepay.data.remote.RidePayApi
@@ -39,10 +40,14 @@ class RidePayApp: Application() {
     lateinit var pushRegistrar: PushRegistrar
         private set
 
+    lateinit var sessionEvents: SessionEvents
+        private set
+
     override fun onCreate() {
         super.onCreate()
         tokenStore= TokenStore(this)
-        api= ApiClient.create(tokenStore)
+        sessionEvents = SessionEvents()
+        api = ApiClient.create(tokenStore, sessionEvents)
         authRepository= AuthRepository(api, tokenStore)
         driverRepository = DriverRepository(api)
         NotificationChannels.create(this)

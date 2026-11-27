@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
 
                     val sessionViewModel: SessionViewModel = viewModel(
                         factory = SessionViewModelFactory(
-                            app.authRepository, app.driverRepository
+                            app.authRepository, app.driverRepository, app.sessionEvents
                         )
                     )
                     val sessionState by sessionViewModel.state.collectAsStateWithLifecycle()
@@ -60,12 +60,13 @@ class MainActivity : ComponentActivity() {
                     when (val state = sessionState) {
                         SessionState.Loading -> LoadingScreen(contentModifier)
 
-                        SessionState.LoggedOut -> {
+                        is SessionState.LoggedOut -> {
                             val loginViewModel: LoginViewModel = viewModel(
                                 factory = LoginViewModelFactory(app.authRepository)
                             )
                             LoginScreen(
                                 viewModel = loginViewModel,
+                                notice = state.notice,
                                 onLoggedIn = {
                                     loginViewModel.reset()
                                     sessionViewModel.onLoggedIn()
